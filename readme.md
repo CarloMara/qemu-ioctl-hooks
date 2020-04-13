@@ -28,4 +28,16 @@ Inside the container, create a build directory, cd into it and run the following
 If this goes well you should be able to make qemu. The compiled binary should be in `build/x86_64-linux-user/`.
 Also, if in the configure you change `--target-list=x86_64-linux-user` to `--target-list=arm-linux-user` it will build a static qemu that can run arm binaries.
 
-# 
+# Building the example
+
+```bash
+cd ioctl_test
+gcc dump_info.c -o dump_info
+```
+
+You can than look the post for the other steps.
+
+# Appling the patch
+
+In `qemu_patch` there's a diff with the modifications needed to run the last example. This patch is tested only on on `stable-4.1`
+
