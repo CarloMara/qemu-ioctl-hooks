@@ -1,5 +1,5 @@
 # QEMU IOCTL Hooks
-Here you can find everything you need to reproduce [the post](https://carlo.marag.no/posts/qemu-ioctl-hooks/)
+Here you can find everything you need to reproduce [the post about QEMU IOCTLs hooks.](https://carlo.marag.no/posts/qemu-ioctl-hooks/)
 
 # QEMU build environment using Docker
 I run arch. If you do too, this can save a lot of time. QEMU is super picky with GLIB, and Ubuntu has the right one.
