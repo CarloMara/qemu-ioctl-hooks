@@ -1,0 +1,79 @@
+commit aae58ce4a666a07a5e12075c81fc86e436fed3c6
+Author: Carlo <ste.maragno@gmail.com>
+Date:   Mon Apr 13 17:11:37 2020 +0200
+
+    Add memgetinfo and hooks
+
+diff --git a/linux-user/ioctls.h b/linux-user/ioctls.h
+index 3281c97ca2..68be28ad1b 100644
+--- a/linux-user/ioctls.h
++++ b/linux-user/ioctls.h
+@@ -282,6 +282,8 @@
+   IOCTL(CDROM_DISC_STATUS, 0, TYPE_NULL)
+   IOCTL(CDROMAUDIOBUFSIZ, 0, TYPE_INT)
+ 
++  IOCTL(MEMGETINFO, IOC_R, MK_PTR(MK_STRUCT(STRUCT_mtd_info_user)))
++  
+ #if 0
+   IOCTL(SNDCTL_COPR_HALT, IOC_RW, MK_PTR(TYPE_INT))
+   IOCTL(SNDCTL_COPR_LOAD, IOC_RW, MK_PTR(TYPE_INT))
+diff --git a/linux-user/syscall.c b/linux-user/syscall.c
+index 8367cb138d..0f8fdfed3a 100644
+--- a/linux-user/syscall.c
++++ b/linux-user/syscall.c
+@@ -56,6 +56,7 @@
+ #include <linux/icmpv6.h>
+ #include <linux/errqueue.h>
+ #include <linux/random.h>
++#include <mtd/mtd-user.h>
+ #ifdef CONFIG_TIMERFD
+ #include <sys/timerfd.h>
+ #endif
+@@ -5073,6 +5074,14 @@ static abi_long do_ioctl(int fd, int cmd, abi_long arg)
+         target_size = thunk_type_size(arg_type, 0);
+         switch(ie->access) {
+         case IOC_R:
++            if(cmd == 0xffffffff80204d01){
++                gemu_log("MEMGETINFO Hook Trigger\n");
++                argptr = lock_user(VERIFY_WRITE, arg, target_size, 0);
++                mtd_info_t temp_info =  {0,  0, 31337, 16, 16, 16};
++                thunk_convert(argptr, &temp_info, arg_type, THUNK_TARGET);
++                unlock_user(argptr, arg, target_size);
++                break;
++            }
+             ret = get_errno(safe_ioctl(fd, ie->host_cmd, buf_temp));
+             if (!is_error(ret)) {
+                 argptr = lock_user(VERIFY_WRITE, arg, target_size, 0);
+diff --git a/linux-user/syscall_defs.h b/linux-user/syscall_defs.h
+index 0662270300..cbb51bda92 100644
+--- a/linux-user/syscall_defs.h
++++ b/linux-user/syscall_defs.h
+@@ -1022,6 +1022,8 @@ struct target_pollfd {
+ #define TARGET_CDROM_NEXT_WRITABLE	0x5394	/* get next writable block */
+ #define TARGET_CDROM_LAST_WRITTEN	0x5395	/* get last block written on disc */
+ 
++#define TARGET_MEMGETINFO             TARGET_IOR('M', 1, struct mtd_info_user)
++
+ /* HD commands */
+ 
+ /* hd/ide ctl's that pass (arg) ptrs to user space are numbered 0x030n/0x031n */
+diff --git a/linux-user/syscall_types.h b/linux-user/syscall_types.h
+index 4e36983826..d17a4e4ad5 100644
+--- a/linux-user/syscall_types.h
++++ b/linux-user/syscall_types.h
+@@ -328,3 +328,14 @@ STRUCT(usbdevfs_disconnect_claim,
+         TYPE_INT, /* flags */
+         MK_ARRAY(TYPE_CHAR, USBDEVFS_MAXDRIVERNAME + 1)) /* driver */
+ #endif /* CONFIG_USBFS */
++
++
++STRUCT(mtd_info_user,
++       TYPE_CHAR,
++       TYPE_INT,
++       TYPE_INT,
++       TYPE_INT,
++       TYPE_INT,
++       TYPE_INT,
++       TYPE_LONG
++)
+\ No newline at end of file
