@@ -39,5 +39,5 @@ You can than look the post for the other steps.
 
 # Appling the patch
 
-In `qemu_patch` there's a diff with the modifications needed to run the last example. This patch is tested only on on `stable-4.1`
+In `qemu_patch` there's a diff with the modifications needed to run the last example. This patch is tested only on `stable-4.1`
 
